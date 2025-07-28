@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 from datetime import datetime
+from datetime import datetime
+import pytz
 import sqlite3
 from datetime import datetime
 app = Flask(__name__)
@@ -71,7 +73,12 @@ def write():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # ✅ Store IST time
+       
+        india = pytz.timezone('Asia/Kolkata')
+        now = datetime.now(india).strftime("%Y-%m-%d %H:%M:%S")
+
         conn = sqlite3.connect("diary.db")
         c = conn.cursor()
         c.execute("INSERT INTO entries (title, content, created_at) VALUES (?, ?, ?)", 
