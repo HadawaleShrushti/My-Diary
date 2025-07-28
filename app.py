@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 from datetime import datetime
-from datetime import datetime
-import pytz
 import sqlite3
 from datetime import datetime
 app = Flask(__name__)
@@ -66,6 +64,9 @@ def login():
     return render_template("login.html")
 
 # ✍ Write
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 @app.route('/write', methods=['GET', 'POST'])
 def write():
     if 'username' not in session:
@@ -74,10 +75,8 @@ def write():
         title = request.form['title']
         content = request.form['content']
 
-        # ✅ Store IST time
-       
-        india = pytz.timezone('Asia/Kolkata')
-        now = datetime.now(india).strftime("%Y-%m-%d %H:%M:%S")
+        # ✅ Store IST time using zoneinfo
+        now = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
 
         conn = sqlite3.connect("diary.db")
         c = conn.cursor()
@@ -142,6 +141,9 @@ def edit_entry(entry_id):
     else:
         return "Entry not found", 404
 
+
+
+
 @app.route('/delete/<int:entry_id>')
 def delete_entry(entry_id):
     conn = sqlite3.connect("diary.db")
@@ -152,6 +154,7 @@ def delete_entry(entry_id):
     return redirect('/')
 
 #for db
+
 
 # ✅ Run the app
 if __name__ == "__main__":
