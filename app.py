@@ -26,26 +26,24 @@ init_db()
 @app.route('/')
 def index():
     if 'username' in session:
-        today = datetime.now().strftime("%Y-%m-%d")  # e.g. "2025-07-28"
         conn = sqlite3.connect("diary.db")
         c = conn.cursor()
         c.execute("SELECT id, title, content, created_at FROM entries ORDER BY created_at DESC")
         entries = c.fetchall()
         conn.close()
 
-        # Filter entries for today
-        today_entries = []
+        all_entries = []
         for entry in entries:
-            entry_date = entry[3][:10]  # '2025-07-28 14:30:00' → '2025-07-28'
-            if entry_date == today:
+            try:
                 created_at = datetime.strptime(entry[3], "%Y-%m-%d %H:%M:%S")
                 formatted_time = created_at.strftime("%b %d, %Y — %I:%M %p")
-                today_entries.append((entry[0], entry[1], entry[2], formatted_time))
+                all_entries.append((entry[0], entry[1], entry[2], formatted_time))
+            except Exception as e:
+                print(f"Skipping entry due to error: {entry[3]} → {e}")
 
-        return render_template("home.html", entries=today_entries)
-    
+        return render_template("home.html", entries=all_entries)
+
     return redirect('/login')
-
 
 # 🔐 Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -154,6 +152,13 @@ def delete_entry(entry_id):
     return redirect('/')
 
 #for db
+
+
+
+
+
+
+
 
 
 # ✅ Run the app
