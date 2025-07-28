@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 from datetime import datetime
 import sqlite3
-
+from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
 
@@ -26,20 +26,24 @@ init_db()
 @app.route('/')
 def index():
     if 'username' in session:
+        today = datetime.now().strftime("%Y-%m-%d")  # e.g. "2025-07-28"
         conn = sqlite3.connect("diary.db")
         c = conn.cursor()
         c.execute("SELECT id, title, content, created_at FROM entries ORDER BY created_at DESC")
         entries = c.fetchall()
         conn.close()
 
-        # 🧠 Convert timestamps to 12-hour format with AM/PM
-        formatted_entries = []
+        # Filter entries for today
+        today_entries = []
         for entry in entries:
-            created_at = datetime.strptime(entry[3], "%Y-%m-%d %H:%M:%S")
-            formatted_time = created_at.strftime("%b %d, %Y — %I:%M %p")  # Example: Jul 15, 2025 — 03:22 PM
-            formatted_entries.append((entry[0], entry[1], entry[2], formatted_time))
+            entry_date = entry[3][:10]  # '2025-07-28 14:30:00' → '2025-07-28'
+            if entry_date == today:
+                created_at = datetime.strptime(entry[3], "%Y-%m-%d %H:%M:%S")
+                formatted_time = created_at.strftime("%b %d, %Y — %I:%M %p")
+                today_entries.append((entry[0], entry[1], entry[2], formatted_time))
 
-        return render_template("home.html", entries=formatted_entries)
+        return render_template("home.html", entries=today_entries)
+    
     return redirect('/login')
 
 
@@ -131,9 +135,6 @@ def edit_entry(entry_id):
     else:
         return "Entry not found", 404
 
-
-
-
 @app.route('/delete/<int:entry_id>')
 def delete_entry(entry_id):
     conn = sqlite3.connect("diary.db")
@@ -143,10 +144,7 @@ def delete_entry(entry_id):
     conn.close()
     return redirect('/')
 
-
-
-
-
+#for db
 
 # ✅ Run the app
 if __name__ == "__main__":
